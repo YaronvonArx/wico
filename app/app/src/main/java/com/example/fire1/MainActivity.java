@@ -5,7 +5,9 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.TextView;
 import java.net.*;
 import java.io.*;
@@ -24,20 +26,55 @@ public class MainActivity extends AppCompatActivity {
     static int start3;
     static int start4;
     static int start5;
+    static int start6;
+    static int start7;
+    static int start8;
+    static int start9;
+    static int start10;
+
+    static int su;
 
     static int close;
-
+    Switch oswitch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        oswitch = (Switch) findViewById(R.id.oswitch);
+        oswitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    su = 1;
+                    hostname = "100.64.124.173";
+                    TextView textView = findViewById(R.id.hostname);
+                    textView.setText(hostname);
+                }else{
+                    su = 2;
+                    hostname = "192.168.1.255";
+                    TextView textView = findViewById(R.id.hostname);
+                    textView.setText(hostname);
+                }
+            }
+
+
+        });
         start1 = 0;
         start2 = 0;
         start3 = 0;
         start4 = 0;
         start5 = 0;
+
+        start6 = 0;
+        start7 = 0;
+        start8 = 0;
+        start9 = 0;
+        start10 = 0;
+
         close = 0;
+
         Runnable runnable = new Runnable() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
@@ -104,6 +141,51 @@ public class MainActivity extends AppCompatActivity {
                             socket.send(packet);
                             System.out.println("Start5ON");
                         }
+                        if(start6>0) {
+
+                            start6 = 0;
+                            byte[] data5 = {0x36};
+                            DatagramPacket packet
+                                    = new DatagramPacket(data5, 1, address, 8888);
+                            socket.send(packet);
+                            System.out.println("Start5ON");
+                        }
+                        if(start7>0) {
+
+                            start7 = 0;
+                            byte[] data5 = {0x37};
+                            DatagramPacket packet
+                                    = new DatagramPacket(data5, 1, address, 8888);
+                            socket.send(packet);
+                            System.out.println("Start5ON");
+                        }
+                        if(start8>0) {
+
+                            start8 = 0;
+                            byte[] data5 = {0x38};
+                            DatagramPacket packet
+                                    = new DatagramPacket(data5, 1, address, 8888);
+                            socket.send(packet);
+                            System.out.println("Start5ON");
+                        }
+                        if(start9>0) {
+
+                            start9 = 0;
+                            byte[] data5 = {0x39};
+                            DatagramPacket packet
+                                    = new DatagramPacket(data5, 1, address, 8888);
+                            socket.send(packet);
+                            System.out.println("Start5ON");
+                        }
+                        if(start10>0) {
+
+                            start10 = 0;
+                            byte[] data5 = {0x40};
+                            DatagramPacket packet
+                                    = new DatagramPacket(data5, 1, address, 8888);
+                            socket.send(packet);
+                            System.out.println("Start5ON");
+                        }
 
 
                     }
@@ -128,24 +210,53 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user taps the Send button */
     public void button1click(View view) {
         TextView textView = findViewById(R.id.infoText);
-        textView.setText("HalloDu");
+        textView.setText("K 1 gesendet");
         start1 = 1;
     }
     public void button2click(View view) {
         start2 = 2;
         TextView textView = findViewById(R.id.infoText);
-        textView.setText("Judihui Kanal2");
+        textView.setText("K 2 gesendet");
     }
     public void button3click(View view) {
         start3 = 3;
         TextView textView = findViewById(R.id.infoText);
-        textView.setText("Judihui Kanal3");
+        textView.setText("K 3 gesendet");
     }
     public void button4click(View view) {
         start4 = 4;
+        TextView textView = findViewById(R.id.infoText);
+        textView.setText("K 4 gesendet");
     }
     public void button5click(View view) {
         start5 = 5;
+        TextView textView = findViewById(R.id.infoText);
+        textView.setText("K 5 gesendet");
+    }
+    public void button6click(View view) {
+        start6 = 6;
+        TextView textView = findViewById(R.id.infoText);
+        textView.setText("K 6 gesendet");
+    }
+    public void button7click(View view) {
+        start7 = 7;
+        TextView textView = findViewById(R.id.infoText);
+        textView.setText("K 7 gesendet");
+    }
+    public void button8click(View view) {
+        start8 = 8;
+        TextView textView = findViewById(R.id.infoText);
+        textView.setText("K 8 gesendet");
+    }
+    public void button9click(View view) {
+        start9 = 9;
+        TextView textView = findViewById(R.id.infoText);
+        textView.setText("K 9 gesendet");
+    }
+    public void button10click(View view) {
+        start10 = 10;
+        TextView textView = findViewById(R.id.infoText);
+        textView.setText("K 10 gesendet");
     }
     public void closeTheConnection(View view){
         close = 1;
