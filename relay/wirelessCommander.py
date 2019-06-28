@@ -1,4 +1,4 @@
-from tkinter import *
+import tkinter as tk
 import random
 import time
 import threading
@@ -11,23 +11,34 @@ import binascii
 import serial
 import serial.tools.list_ports as port_list
 from configparser import ConfigParser
+from tkinter import filedialog
 ##http://effbot.org/tkinterbook/button.htm
 
-global ser
+
 parser = ConfigParser()
 ##Remote AT Command
 ##MAC Address 64 bit
 ## AT Command ASCII
 ## Parameter Value HEX
-serialpi = '/dev/serial0'
-serialcom9 = 'COM11'
-serialstatus=serialpi
+
 setserial = 0
 yv = 1
 xv = 0
+variabel = 0
+global ser
+global switchOffTime
 global anzk
+global pfile
+global progd
+global progstr
+global programmclose
+
+pfile =""
+programmclose = 0
+switchOffTime = 10
 anzk = 10
 
+#Kanäle-------------------------------------
 @dataclass
 class Kanal:
     zuordnungOn: list = ""
@@ -45,6 +56,8 @@ kanaele = [Kanal() for i in range(anzk)]
 for i in range(anzk):
     kanaele[i].status      = False
 
+
+#--------------------------------------------
 kanaele[0].zuordnungOn  = ["1_IO3_on"]
 kanaele[0].zuordnungOff = ["1_IO3_off"]
 
@@ -77,14 +90,8 @@ kanaele[9].zuordnungOff = ["1_IO4_off"]
 
 
 
-variabel = 0
 
-
-global switchOffTime
-
-switchOffTime = 10
-
-
+#Socket Definiton--------------------------------------------------
 
 PORT = 8888 # Arbitrary non-privileged port
  
@@ -94,78 +101,30 @@ print('Socket created')
 #Bind socket to local host and port
 s.bind((socket.gethostbyname(socket.gethostname()), PORT))   
 print('Socket bind complete')
-
+#-----------------------------------------------------------------
 
 
 
 #-------------------------------------------------------------------------------------------------------
-def Programm():
-    prog = open("programm.csv", "r")
-    parser.read("config")
-    print("gggggggggggggggggggggggggggg")
 
-    for line in prog:
-        g = line.rstrip()
-        
-        g2 = g.split(" ")
-        
-        command = g2[0]
-        framestring = parser.get("modules", command, fallback = "00 00 00 00")
-        sendframe = bytearray(0)
-        y1 = framestring.split()
-        for y2 in y1:
-            
-            y3 = y2.encode('utf-8')
-            y4 = binascii.unhexlify(y3)
-            sendframe.append(y4[0])
 
-        
-        try:
-            ser.write(sendframe)
+#-------------------------------------------------------------------------------------------
 
-        except:
-            print("Serial nicht verbunden")
 
-        
-        print("warte", g2[1])
-        time.sleep(int(g2[1]))
-
-    print("Programm fertig")
-    print("Alles ausschalten...")
-    f = dict(parser.items('modules'))
-    for e in f:
-        sendframe = bytearray(0)
-        s =str(e)
-        d = s.split("_")
-        
-        h = d[2]
-        k = h.split(",")
-        
-        if k[0] == "off":
-            
-            framestring = parser.get("modules", s )
-            y1 = framestring.split()
-            for y2 in y1:
-                
-                y3 = y2.encode('utf-8')
-                y4 = binascii.unhexlify(y3)
-                sendframe.append(y4[0])
-
-            try: ser.write(sendframe)
-            except: pass
-    print("fertig")            
-    print("gggggggggggggggggggggggggggggg")
-    
-    
 #--------------------------------------------------------------------------------------------------------
 
 
 
-def GUI(name):
-    var = Tk()
-    var.title("Zuordnung")
-    canvas = Canvas(var,width=540,height=100)
 
+
+
+def GUI(name):
+    var = tk.Tk()
+    var.title("Wireless Commander")
+    canvas = tk.Canvas(var,width=540,height=100)
+
+    Buttonframe = tk.Frame(width=100, height=100, bg = '#a6a4a4', relief='raised', bd = 4)
+    Buttonframe.grid(row=0, column=0, rowspan=10)   
     
     global h
 
@@ -212,6 +171,30 @@ def GUI(name):
         variabelmanagerThread.start()
 
 
+    def PAusschalten():
+        print("Alles ausschalten...")
+        f = dict(parser.items('modules'))
+        for e in f:
+            sendframe = bytearray(0)
+            s =str(e)
+            d = s.split("_")
+            
+            h = d[2]
+            k = h.split(",")
+            
+            if k[0] == "off":
+                
+                framestring = parser.get("modules", s )
+                y1 = framestring.split()
+                for y2 in y1:
+                    
+                    y3 = y2.encode('utf-8')
+                    y4 = binascii.unhexlify(y3)
+                    sendframe.append(y4[0])
+
+                try: ser.write(sendframe)
+                except: pass
+        print("Alles Ausgeschallten")
 
 
     def serialcom9():
@@ -221,132 +204,209 @@ def GUI(name):
     def serialpi():
         global setserial
         setserial = 2
-        
-        
+    global Programm
+    global pfile
+    def Programm():
+        print("File =")
+        print(pfile)
+        print("/n")
+        global ProgD
+        global programmclose
+        global programmclose
+        try:
+            prog = open(pfile, "r")
+            parser.read("config")
+            print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 
-    e1 = Entry(var)
+            for line in prog:
+                
+                if programmclose == 1:
+                    #raise Exception("Stop")
+                    programmclose = 0
+                    break
+                    
+                else:
+                    
+                    g = line.rstrip()
+                    
+                    g2 = g.split(" ")
+                    
+                    
+                    command = g2[0]
+                    framestring = parser.get("modules", command, fallback = "00 00 00 00")
+                    sendframe = bytearray(0)
+                    y1 = framestring.split()
+                    for y2 in y1:
+                        
+                        y3 = y2.encode('utf-8')
+                        y4 = binascii.unhexlify(y3)
+                        sendframe.append(y4[0])
+
+                    
+                    try:
+                        ser.write(sendframe)
+
+                    except:
+                        print("Serial nicht verbunden")
+
+                    
+                    print("warte", g2[1])
+                    try:
+                        progd.insert(tk.INSERT, "\n")
+                        progd.insert(tk.INSERT, str(command))
+                        
+                    except:
+                        print("Fehler")
+                    time.sleep(int(g2[1]))
+            prog.close()
+            
+            print("Programm fertig")
+            
+            print("gggggggggggggggggggggggggggggg")
+        except:
+            print("Kein File ausgewählt")
+            try:
+                prog.close()
+            except:
+                print("Konnte File nicht schliessen")
+        PAusschalten()
+        programmclose = 0
+        
+#ProgrammDEF Fertig---------------------------------------------------------------------
+    global pfile
+    def StartProg():
+        global programmclose
+        programmclose = 0
+        ProgrammT = threading.Thread(target=Programm, args=(), daemon=True)
+        ProgrammT.start()
+
+    
+    e1 = tk.Entry(Buttonframe)
     e1.grid(row = 0+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal1").grid(row = 0+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal1").grid(row = 0+yv, column = 0+xv)
     u = kanaele[0].zuordnungOn
     for i in kanaele[0].zuordnungOn:
         
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e1.insert(END,str(l)+" ")
+        e1.insert(tk.INSERT,str(l)+" ")
     
     ##2##2##2##2##2##2##2##2##2##2##2##2##2##2##2##2##2##2##2##2##2##2##2
 
-    e2 = Entry(var)
+    e2 = tk.Entry(Buttonframe)
     e2.grid(row = 1+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal2").grid(row = 1+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal2").grid(row = 1+yv, column = 0+xv)
     u = kanaele[1].zuordnungOn
     for i in u:
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e2.insert(END,str(l)+" " )
+        e2.insert(tk.INSERT,str(l)+" " )
    
         
 
     ####3##3##3##3##3##3##3##3##3##3##3##3##3##3##3##3##3##3##3##3####3##
-    e3 = Entry(var)
+    e3 = tk.Entry(Buttonframe)
     e3.grid(row = 2+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal3").grid(row = 2+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal3").grid(row = 2+yv, column = 0+xv)
     u = kanaele[2].zuordnungOn
     for i in u:
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e3.insert(END,str(l)+" " )
+        e3.insert(tk.INSERT,str(l)+" " )
     
         
         
     ##4##4##4##4##4##4##4##4##4##4##4##4##4##4##4##4##4##4##4##4##4#####4
-    e4 = Entry(var)
+    e4 = tk.Entry(Buttonframe)
     e4.grid(row = 3+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal4").grid(row = 3+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal4").grid(row = 3+yv, column = 0+xv)
     u = kanaele[3].zuordnungOn
     for i in u:
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e4.insert(END,str(l)+" " )
+        e4.insert(tk.INSERT,str(l)+" " )
        
     ##5##5##5#####5#######5#######5#####5######5###5####5###5#######5
-    e5 = Entry(var)
+    e5 = tk.Entry(Buttonframe)
     e5.grid(row = 4+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal5").grid(row = 4+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal5").grid(row = 4+yv, column = 0+xv)
     u = kanaele[4].zuordnungOn
     for i in u:
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e5.insert(END,str(l)+" " )
+        e5.insert(tk.INSERT,str(l)+" " )
 
-    e6 = Entry(var)
+    e6 = tk.Entry(Buttonframe)
     e6.grid(row = 5+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal6").grid(row = 5+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal6").grid(row = 5+yv, column = 0+xv)
     u = kanaele[5].zuordnungOn
     for i in u:
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e6.insert(END,str(l)+" " )
+        e6.insert(tk.INSERT,str(l)+" " )
 
 
-    e7 = Entry(var)
+    e7 = tk.Entry(Buttonframe)
     e7.grid(row = 6+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal7").grid(row = 6+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal7").grid(row = 6+yv, column = 0+xv)
     u = kanaele[6].zuordnungOn
     for i in u:
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e7.insert(END,str(l)+" " )
+        e7.insert(tk.INSERT,str(l)+" " )
 
-    e8 = Entry(var)
+    e8 = tk.Entry(Buttonframe)
     e8.grid(row = 7+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal8").grid(row = 7+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal8").grid(row = 7+yv, column = 0+xv)
     u = kanaele[7].zuordnungOn
     for i in u:
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e8.insert(END,str(l)+" " )
+        e8.insert(tk.INSERT,str(l)+" " )
 
-    e9 = Entry(var)
+    e9 = tk.Entry(Buttonframe)
     e9.grid(row = 8+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal9").grid(row = 8+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal9").grid(row = 8+yv, column = 0+xv)
     u = kanaele[8].zuordnungOn
     for i in u:
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e9.insert(END,str(l)+" " )
+        e9.insert(tk.INSERT,str(l)+" " )
 
-    e10 = Entry(var)
+    e10 = tk.Entry(Buttonframe)
     e10.grid(row = 9+yv, column = 1+xv)
-    Label(var,fg="darkblue",  text="Kanal10").grid(row = 9+yv, column = 0+xv)
+    tk.Label(Buttonframe,fg="darkblue",  text="Kanal10").grid(row = 9+yv, column = 0+xv)
     u = kanaele[9].zuordnungOn
     for i in u:
         t = i.split("_")
         del t[2]
         l= "_".join(t)
-        e10.insert(END,str(l)+" " )
+        e10.insert(tk.INSERT,str(l)+" " )
 
 
-
+    #Serial Knöpfe---------------------------------------------------
+    Serialframe = tk.Frame(width=100, height=100, bg = '#a6a4a4', relief='raised', bd = 4)
+    Serialframe.grid(row=0, column=2, rowspan=3)
+        
     global f
-    f = Text(var, height=1, width=6)
+    f = tk.Text(Serialframe, height=1, width=6)
     f.grid(row = 4+yv, column = 6+xv)
-    f.insert(END, str("Choose"))
-    ButtonSerial1= Button(var, text="PC", command=serialcom9)
+    f.insert(tk.INSERT, str("Choose"))
+    ButtonSerial1= tk.Button(Serialframe, text="PC", command=serialcom9)
     ButtonSerial1.grid(row = 5+yv, column =6+xv)
 
-    ButtonSerial2= Button(var, text="Pi", command=serialpi)
+    ButtonSerial2= tk.Button(Serialframe, text="Pi", command=serialpi)
     ButtonSerial2.grid(row = 6+yv, column =6+xv)
-    
+    #-----------------------------------------------------------------
     
     def Taker(i, e):
         print("Taker", i)
@@ -403,102 +463,131 @@ def GUI(name):
         Taker(9, e10.get()) 
     
 
-
-
-
-
-    T = Text(var, height=1, width=1).grid(row = 2+yv, column =4+xv)    
+    def Programmfile():
+        global pfile
+        var.filename =  filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("all files","*.jpg"),("all files","*.*")))
+        pfile = var.filename
+        print(pfile)
+        File.insert(tk.INSERT, str(pfile))
+        progd.insert(tk.INSERT, "File Ausgewählt")
         
-    ButtonKanal1 = Button(var, text="Kanal1", command=Kanalzuordnung1)
+    
+    def ProgrammStop():
+        global programmclose
+        programmclose = 1
+        PAusschalten()
+        progd.delete(1.0, tk.INSERT)
+    
+
+    T = tk.Text(var, height=1, width=1).grid(row = 2+yv, column =4+xv)    
+        
+    ButtonKanal1 = tk.Button(Buttonframe, text="Kanal1", command=Kanalzuordnung1)
     ButtonKanal1.grid(row = 0+yv, column =4+xv)
 
-    ButtonKanal2 = Button(var, text="Kanal2", command=Kanalzuordnung2)
+    ButtonKanal2 = tk.Button(Buttonframe, text="Kanal2", command=Kanalzuordnung2)
     ButtonKanal2.grid(row = 1+yv, column =4+xv)
 
-    ButtonKanal3 = Button(var, text="Kanal3", command=Kanalzuordnung3)
+    ButtonKanal3 = tk.Button(Buttonframe, text="Kanal3", command=Kanalzuordnung3)
     ButtonKanal3.grid(row = 2+yv, column =4+xv)
 
-    ButtonKanal4= Button(var, text="Kanal4", command=Kanalzuordnung4)
+    ButtonKanal4= tk.Button(Buttonframe, text="Kanal4", command=Kanalzuordnung4)
     ButtonKanal4.grid(row = 3+yv, column =4+xv)
 
-    ButtonKanal5= Button(var, text="Kanal5", command=Kanalzuordnung5)
+    ButtonKanal5= tk.Button(Buttonframe, text="Kanal5", command=Kanalzuordnung5)
     ButtonKanal5.grid(row = 4+yv, column =4+xv)
 
-    ButtonKanal6= Button(var, text="Kanal6", command=Kanalzuordnung6)
+    ButtonKanal6= tk.Button(Buttonframe, text="Kanal6", command=Kanalzuordnung6)
     ButtonKanal6.grid(row = 5+yv, column =4+xv)
 
-    ButtonKanal7= Button(var, text="Kanal7", command=Kanalzuordnung7)
+    ButtonKanal7= tk.Button(Buttonframe, text="Kanal7", command=Kanalzuordnung7)
     ButtonKanal7.grid(row = 6+yv, column =4+xv)
 
-    ButtonKanal8= Button(var, text="Kanal8", command=Kanalzuordnung8)
+    ButtonKanal8= tk.Button(Buttonframe, text="Kanal8", command=Kanalzuordnung8)
     ButtonKanal8.grid(row = 7+yv, column =4+xv)
 
-    ButtonKanal9= Button(var, text="Kanal9", command=Kanalzuordnung9)
+    ButtonKanal9= tk.Button(Buttonframe, text="Kanal9", command=Kanalzuordnung9)
     ButtonKanal9.grid(row = 8+yv, column =4+xv)
 
-    ButtonKanal10= Button(var, text="Kanal10", command=Kanalzuordnung10)
+    ButtonKanal10= tk.Button(Buttonframe, text="Kanal10", command=Kanalzuordnung10)
     ButtonKanal10.grid(row = 9+yv, column =4+xv)
 
 
 
-    ButtonInit= Button(var, text="Initialisieren",fg="red", command=loader)
+    ButtonInit= tk.Button(Buttonframe, text="Initialisieren",fg="red", command=loader)
     ButtonInit.grid(row = 10, column =6)
 
 
 
 
-    ButtonKanal1Get = Button(var, text="Übernehmen", command=übernehmen1)
+    ButtonKanal1Get = tk.Button(Buttonframe, text="Übernehmen", command=übernehmen1)
     ButtonKanal1Get.grid(row = 0+yv, column =5+xv)
 
-    ButtonKanal2Get = Button(var, text="Übernehmen", command=übernehmen2)
+    ButtonKanal2Get = tk.Button(Buttonframe, text="Übernehmen", command=übernehmen2)
     ButtonKanal2Get.grid(row = 1+yv, column =5+xv)
 
-    ButtonKanal3Get = Button(var, text="Übernehmen", command=übernehmen3)
+    ButtonKanal3Get = tk.Button(Buttonframe, text="Übernehmen", command=übernehmen3)
     ButtonKanal3Get.grid(row = 2+yv, column =5+xv)
 
-    ButtonKanal4Get= Button(var, text="Übernehmen", command=übernehmen4)
+    ButtonKanal4Get= tk.Button(Buttonframe, text="Übernehmen", command=übernehmen4)
     ButtonKanal4Get.grid(row = 3+yv, column =5+xv)
 
-    ButtonKanal5Get= Button(var, text="Übernehmen", command=übernehmen5)
+    ButtonKanal5Get= tk.Button(Buttonframe, text="Übernehmen", command=übernehmen5)
     ButtonKanal5Get.grid(row = 4+yv, column =5+xv)
 
-    ButtonKanal6Get= Button(var, text="Übernehmen", command=übernehmen6)
+    ButtonKanal6Get= tk.Button(Buttonframe, text="Übernehmen", command=übernehmen6)
     ButtonKanal6Get.grid(row = 5+yv, column =5+xv)
 
-    ButtonKanal7Get= Button(var, text="Übernehmen", command=übernehmen7)
+    ButtonKanal7Get= tk.Button(Buttonframe, text="Übernehmen", command=übernehmen7)
     ButtonKanal7Get.grid(row = 6+yv, column =5+xv)
 
-    ButtonKanal8Get= Button(var, text="Übernehmen", command=übernehmen8)
+    ButtonKanal8Get= tk.Button(Buttonframe, text="Übernehmen", command=übernehmen8)
     ButtonKanal8Get.grid(row = 7+yv, column =5+xv)
 
-    ButtonKanal9Get= Button(var, text="Übernehmen", command=übernehmen9)
+    ButtonKanal9Get= tk.Button(Buttonframe, text="Übernehmen", command=übernehmen9)
     ButtonKanal9Get.grid(row = 8+yv, column =5+xv)
 
-    ButtonKanal10Get= Button(var, text="Übernehmen", command=übernehmen10)
+    ButtonKanal10Get= tk.Button(Buttonframe, text="Übernehmen", command=übernehmen10)
     ButtonKanal10Get.grid(row = 9+yv, column =5+xv)
 
 
-    
-        
-    
-    
-    
-
-    Label(var, text="Wireless Controller",fg="darkblue", font = "Helvetica 20 bold italic").grid(row=0, column=0, columnspan=5)
+    tk.Label(Buttonframe, text="Wireless Controller",fg="darkblue", font = "Helvetica 20 bold italic").grid(row=0, column=0, columnspan=5)
    
 
-    ##1##1##1##1##1##1##1##1##1##1##1##1##1##1##1##1##1##1##1##1##1##1
-    
-    
-        
-        
-    
-
-    canvas = Canvas(var, width=100, height=100)
+    canvas = tk.Canvas(Buttonframe, width=100, height=100)
     canvas.grid(row = 1, column =6, rowspan=4)
-    mein_Bild = PhotoImage(file='C:\\Users\Yaron\Documents\Hobby\Python\WICO3.png')
-    canvas.create_image(0, 0, anchor=NW, image=mein_Bild)
+    mein_Bild = tk.PhotoImage(file='C:\\Users\Yaron\Documents\Hobby\Python\WICO3.png')
+    canvas.create_image(0, 0, anchor='nw', image=mein_Bild)
+#--------------------------------------------
+    frame = tk.Frame(width=100, height=100, bg = '#a6a4a4', relief='raised', bd = 4)
+    frame.grid(row=2, column=2, rowspan=10)
 
+    
+
+    
+    ButtonProgrammDget= tk.Button(frame, text="Programm File", command=Programmfile)
+    ButtonProgrammDget.grid(row = 1, column =1, sticky = 'w')
+
+    File = tk.Text(frame, height=1, width=30)
+    File.grid(row = 2, column = 1)
+
+    ButtonProgrammStart= tk.Button(frame, text="Start Programm", command=StartProg, activebackground = 'red', foreground = 'red')
+    ButtonProgrammStart.grid(row = 3, column =1, sticky = 'w')
+
+    Textframe = tk.Frame(frame, width=100, height=70)
+    Textframe.grid(row=4, column=1)
+
+    S = tk.Scrollbar(Textframe)
+    S.grid(row = 1, column=2, rowspan=2)
+    
+    File.config(yscrollcommand=S.set)
+    
+    progd = tk.Text(Textframe, height=5, width=30)
+    progd.grid(row = 1, column =1)
+    S.config(command=progd.yview)
+
+    ButtonProgrammStop= tk.Button(frame, text="Programm Stop", command=ProgrammStop)
+    ButtonProgrammStop.grid(row = 5, column =1, sticky = 'w')
+#----------------------------------------------
     var.mainloop()
 ##------------------------------------------------
 def Variabelmanager(data):
@@ -507,7 +596,6 @@ def Variabelmanager(data):
     print(data)
        
     h = data
-    print(type(data))
      
     if h == b'1':
         kanaele[0].status = True
@@ -647,8 +735,8 @@ while waiter == 0:
 
 def insert(port):
     global f
-    f.delete(1.0, END)
-    f.insert(END,port)
+    f.delete(1.0, tk.INSERT)
+    f.insert(tk.INSERT,port)
     
 
 counter = 1
@@ -682,8 +770,8 @@ if setserial == 2:
         
         ser = serial.Serial('/dev/serial0', 9600, timeout=.5)
         setserial = 0
-        f.delete(1.0, END)
-        f.insert(END,"Pi")
+        f.delete(1.0, tk.INSERT)
+        f.insert(tk.INSERT,"Pi")
 
     except:
         print("konnte nichr verbinden")
