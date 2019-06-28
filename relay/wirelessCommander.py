@@ -10,8 +10,11 @@ from dataclasses import dataclass
 import binascii
 import serial
 import serial.tools.list_ports as port_list
+from configparser import ConfigParser
 ##http://effbot.org/tkinterbook/button.htm
 
+global ser
+parser = ConfigParser()
 ##Remote AT Command
 ##MAC Address 64 bit
 ## AT Command ASCII
@@ -95,10 +98,66 @@ print('Socket bind complete')
 
 
 
-##-------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------
+def Programm():
+    prog = open("programm.csv", "r")
+    parser.read("config")
+    print("gggggggggggggggggggggggggggg")
 
+    for line in prog:
+        g = line.rstrip()
+        
+        g2 = g.split(" ")
+        
+        command = g2[0]
+        framestring = parser.get("modules", command, fallback = "00 00 00 00")
+        sendframe = bytearray(0)
+        y1 = framestring.split()
+        for y2 in y1:
+            
+            y3 = y2.encode('utf-8')
+            y4 = binascii.unhexlify(y3)
+            sendframe.append(y4[0])
+
+        
+        try:
+            ser.write(sendframe)
+
+        except:
+            print("Serial nicht verbunden")
+
+        
+        print("warte", g2[1])
+        time.sleep(int(g2[1]))
+
+    print("Programm fertig")
+    print("Alles ausschalten...")
+    f = dict(parser.items('modules'))
+    for e in f:
+        sendframe = bytearray(0)
+        s =str(e)
+        d = s.split("_")
+        
+        h = d[2]
+        k = h.split(",")
+        
+        if k[0] == "off":
+            
+            framestring = parser.get("modules", s )
+            y1 = framestring.split()
+            for y2 in y1:
+                
+                y3 = y2.encode('utf-8')
+                y4 = binascii.unhexlify(y3)
+                sendframe.append(y4[0])
+
+            try: ser.write(sendframe)
+            except: pass
+    print("fertig")            
+    print("gggggggggggggggggggggggggggggg")
     
-##--------------------------------------------------------------------------------------------------------
+    
+#--------------------------------------------------------------------------------------------------------
 
 
 
@@ -111,40 +170,40 @@ def GUI(name):
     global h
 
     def Kanalzuordnung1():
-        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=("1",), daemon=True)
+        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'1',), daemon=True)
         variabelmanagerThread.start()
        
     def Kanalzuordnung2():
-        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=("2",), daemon=True)
+        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'2',), daemon=True)
         variabelmanagerThread.start()
 
     def Kanalzuordnung3():
-        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=("3",), daemon=True)
+        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'3',), daemon=True)
         variabelmanagerThread.start()
 
     def Kanalzuordnung4():
-        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=("4",), daemon=True)
+        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'4',), daemon=True)
         variabelmanagerThread.start()
 
     def Kanalzuordnung5():
-        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=("5",), daemon=True)
+        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'5',), daemon=True)
         variabelmanagerThread.start()
 
     def Kanalzuordnung6():
-        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=("6",), daemon=True)
+        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'6',), daemon=True)
         variabelmanagerThread.start()
 
     def Kanalzuordnung7():
-        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=("7",), daemon=True)
+        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'7',), daemon=True)
         variabelmanagerThread.start()
 
     def Kanalzuordnung8():
-        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=("8",), daemon=True)
+        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'8',), daemon=True)
         variabelmanagerThread.start()
 
 
     def Kanalzuordnung9():
-        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=("9",), daemon=True)
+        variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'9',), daemon=True)
         variabelmanagerThread.start()
 
 
@@ -446,54 +505,53 @@ def Variabelmanager(data):
     
     global kanaele
     print(data)
-   
+       
     h = data
-    
-    
-    if h == 1:
+    print(type(data))
+     
+    if h == b'1':
         kanaele[0].status = True
         time.sleep(switchOffTime)
         kanaele[0].status = False
-        print("Kan1 aus")
 
-    if h ==2:
+    if h ==b'2':
         kanaele[1].status = True
         time.sleep(switchOffTime)
         kanaele[1].status = False
 
-    if h ==3:
+    if h ==b'3':
         kanaele[2].status = True
         time.sleep(switchOffTime)
         kanaele[2].status = False
 
-    if h ==4:
+    if h ==b'4':
         kanaele[3].status = True
         time.sleep(switchOffTime)
         kanaele[3].status = False
 
-    if h ==5:
+    if h ==b'5':
         kanaele[4].status = True
         time.sleep(switchOffTime)
         kanaele[4].status = False
 
-    if h ==6:
+    if h ==b'6':
         kanaele[5].status = True
         time.sleep(switchOffTime)
         kanaele[5].status = False
 
-    if h ==7:
+    if h ==b'7':
         kanaele[6].status = True
         time.sleep(switchOffTime)
         kanaele[6].status = False
 
 
-    if h ==8:
+    if h ==b'8':
         kanaele[7].status = True
         time.sleep(switchOffTime)
         kanaele[7].status = False
 
 
-    if h ==9:
+    if h ==b'9':
         kanaele[8].status = True
         time.sleep(switchOffTime)
         kanaele[8].status = False
@@ -530,35 +588,25 @@ connectionhandlerThread.start()
 
 
 def loader():
-    file = open("module.csv","r")
+    parser.read("config")
     print("---------------------------------------------------------")
     print("Zuordnungen")
     print("")
     for i in range(anzk):
         kanaele[i].strOn = ""
         kanaele[i].strOff = ""
-        
-    for line in file:
-        y = line.rstrip()
-        
-        x=y.split("/")
+   
+        for z in kanaele[i].zuordnungOn:
+                
+            kanaele[i].strOn = kanaele[i].strOn + str(parser.get("modules", z, fallback = "11 11 11 11")+ " ")
+            print("Kanal", i+1, "strOn", kanaele[i].strOn)    
 
-        for i in range(anzk):
+        for r in kanaele[i].zuordnungOff:
             
-            for z in kanaele[i].zuordnungOn:
-                if x[0] == z:
-                    
-                    kanaele[i].strOn = kanaele[i].strOn + str(x[1]+ " ")
-                print("Kanal", i+1, "strOn", kanaele[i].strOn)    
+                
+            kanaele[i].strOff = kanaele[i].strOff + str(parser.get("modules", r, fallback = "00 00 00 00")+ " ")
+            print("Kanal", i+1, "strOff", kanaele[i].strOff)    
 
-            for r in kanaele[i].zuordnungOff:
-                if x[0] == r:
-                    
-                    kanaele[i].strOff = kanaele[i].strOff + str(x[1]+ " ")
-                print("Kanal", i+1, "strOff", kanaele[i].strOff)    
-
-
-    file.close()
 
     for k in kanaele:
         k.frameOn = bytearray(0)
@@ -578,8 +626,9 @@ def loader():
             k.frameOff.append(y4[0])
         
     
-    
 loader()
+
+
 
 waiter = 0
 global com
