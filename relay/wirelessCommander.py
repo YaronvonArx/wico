@@ -1,5 +1,6 @@
 import tkinter as tk
 import random
+
 import time
 import threading
 import socket
@@ -12,6 +13,7 @@ import serial
 import serial.tools.list_ports as port_list
 from configparser import ConfigParser
 from tkinter import filedialog
+from tkinter import font
 ##http://effbot.org/tkinterbook/button.htm
 
 
@@ -25,6 +27,8 @@ setserial = 0
 yv = 1
 xv = 0
 variabel = 0
+
+
 global ser
 global switchOffTime
 global anzk
@@ -32,6 +36,10 @@ global pfile
 global progd
 global progstr
 global programmclose
+
+global schliessen
+schliessen = False
+
 
 pfile =""
 programmclose = 0
@@ -55,6 +63,9 @@ kanaele = [Kanal() for i in range(anzk)]
 
 for i in range(anzk):
     kanaele[i].status      = False
+
+
+
 
 
 #--------------------------------------------
@@ -89,8 +100,27 @@ kanaele[9].zuordnungOn  = ["1_IO4_on"]
 kanaele[9].zuordnungOff = ["1_IO4_off"]
 
 
+samplerframes=[]
 
+parser.read("config")
+l= list(parser.items('Sampler'))
+for modul in l:
+            m2 = modul[1]            
+            samplerFrame= bytearray(0)
+            y1 = m2.split()
+            
+            for y2 in y1:                    
+                y3 = y2.encode('utf-8')
+                y4 = binascii.unhexlify(y3)
+                samplerFrame.append(y4[0])
 
+            samplerframes.append(samplerFrame)
+
+print(samplerframes)
+sendbools = []
+for modul in samplerframes:
+    sendbools.append(False)
+print("sendbools", sendbools)            
 #Socket Definiton--------------------------------------------------
 
 PORT = 8888 # Arbitrary non-privileged port
@@ -107,6 +137,7 @@ print('Socket bind complete')
 
 #-------------------------------------------------------------------------------------------------------
 
+    
 
 #-------------------------------------------------------------------------------------------
 
@@ -125,8 +156,24 @@ def GUI(name):
 
     Buttonframe = tk.Frame(width=100, height=100, bg = '#a6a4a4', relief='raised', bd = 4)
     Buttonframe.grid(row=0, column=0, rowspan=10)   
+    global K1Anzeige
+    global K2Anzeige
+    global K3Anzeige
+    global K4Anzeige
+    global K5Anzeige
+    global K6Anzeige
+    global K7Anzeige
+    global K8Anzeige
+    global K9Anzeige
+    global K10Anzeige
     
+
+    global adcschwelle
+    adcschwelle = 500
     global h
+
+    global samplerframes
+    global sendbools
 
     def Kanalzuordnung1():
         variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(b'1',), daemon=True)
@@ -395,7 +442,7 @@ def GUI(name):
 
     #Serial Knöpfe---------------------------------------------------
     Serialframe = tk.Frame(width=100, height=100, bg = '#a6a4a4', relief='raised', bd = 4)
-    Serialframe.grid(row=0, column=2, rowspan=3)
+    Serialframe.grid(row=0, column=2, rowspan=3, sticky="n")
         
     global f
     f = tk.Text(Serialframe, height=1, width=6)
@@ -465,7 +512,8 @@ def GUI(name):
 
     def Programmfile():
         global pfile
-        var.filename =  filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("all files","*.jpg"),("all files","*.*")))
+##        var.filename =  filedialog.askopenfilename(initialdir = "/",title = "Wähle das Programmfile aus",filetypes = (("*.csv","*.csv")))
+        var.filename =  filedialog.askopenfilename(initialdir = "/",title = "Wähle das Programmfile aus",filetypes = (("csv","*.csv"),("all files","*.*")))
         pfile = var.filename
         print(pfile)
         File.insert(tk.INSERT, str(pfile))
@@ -479,8 +527,20 @@ def GUI(name):
         progd.delete(1.0, tk.INSERT)
     
 
-    T = tk.Text(var, height=1, width=1).grid(row = 2+yv, column =4+xv)    
+    def schliessen():
         
+        var.quit()
+        global schliessen
+        schliessen = True
+        
+        try:
+            ser.close()
+        except:
+            pass
+        print("schliessen")
+        sys.exit("Geschlossen")
+        exit()
+
     ButtonKanal1 = tk.Button(Buttonframe, text="Kanal1", command=Kanalzuordnung1)
     ButtonKanal1.grid(row = 0+yv, column =4+xv)
 
@@ -514,7 +574,7 @@ def GUI(name):
 
 
     ButtonInit= tk.Button(Buttonframe, text="Initialisieren",fg="red", command=loader)
-    ButtonInit.grid(row = 10, column =6)
+    ButtonInit.grid(row = 10, column =7)
 
 
 
@@ -553,17 +613,16 @@ def GUI(name):
     tk.Label(Buttonframe, text="Wireless Controller",fg="darkblue", font = "Helvetica 20 bold italic").grid(row=0, column=0, columnspan=5)
    
 
-    canvas = tk.Canvas(Buttonframe, width=100, height=100)
-    canvas.grid(row = 1, column =6, rowspan=4)
-    mein_Bild = tk.PhotoImage(file='C:\\Users\Yaron\Documents\Hobby\Python\WICO3.png')
-    canvas.create_image(0, 0, anchor='nw', image=mein_Bild)
+##    canvas = tk.Canvas(Buttonframe, width=100, height=100, bg="gray")
+##    canvas.grid(row = 1, column =7, rowspan=4)
+##    mein_Bild = tk.PhotoImage(file='C:\\Users\Yaron\Documents\Hobby\Python\WICO3.png')
+##    canvas.create_image(0, 0, anchor='nw', image=mein_Bild)
 #--------------------------------------------
     frame = tk.Frame(width=100, height=100, bg = '#a6a4a4', relief='raised', bd = 4)
     frame.grid(row=2, column=2, rowspan=10)
 
     
 
-    
     ButtonProgrammDget= tk.Button(frame, text="Programm File", command=Programmfile)
     ButtonProgrammDget.grid(row = 1, column =1, sticky = 'w')
 
@@ -587,6 +646,78 @@ def GUI(name):
 
     ButtonProgrammStop= tk.Button(frame, text="Programm Stop", command=ProgrammStop)
     ButtonProgrammStop.grid(row = 5, column =1, sticky = 'w')
+
+
+    greenFont = font.Font(size=12, weight='bold')
+
+
+    K1Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K1Anzeige.grid(row = 0+yv, column =6+xv)
+    K1Anzeige.tag_add("farbe", "1.0")    
+    K1Anzeige.tag_config("farbe", background="white")
+
+    
+    
+    K2Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K2Anzeige.grid(row = 1+yv, column =6+xv)
+    K2Anzeige.tag_add("farbe", "1.0")
+    K2Anzeige.tag_config("farbe", background="white")
+    
+    
+    K3Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K3Anzeige.grid(row = 2+yv, column =6+xv)
+    K3Anzeige.tag_add("farbe", "1.0")
+    K3Anzeige.tag_config("farbe", background="white")
+    
+    
+    K4Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K4Anzeige.grid(row = 3+yv, column =6+xv)
+    K4Anzeige.tag_add("farbe", "1.0")
+    K4Anzeige.tag_config("farbe", background="white")
+    
+    K5Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K5Anzeige.grid(row = 4+yv, column =6+xv)
+    K5Anzeige.tag_add("farbe", "1.0")
+    K5Anzeige.tag_config("farbe", background="white")
+    
+    
+    K6Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K6Anzeige.grid(row = 5+yv, column =6+xv)
+    K6Anzeige.tag_add("farbe", "1.0")
+    K6Anzeige.tag_config("farbe", background="white")
+    
+    K7Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K7Anzeige.grid(row = 6+yv, column =6+xv)
+    K7Anzeige.tag_add("farbe", "1.0")
+    K7Anzeige.tag_config("farbe", background="white")
+    
+    
+    K8Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K8Anzeige.grid(row = 7+yv, column =6+xv)
+    K8Anzeige.tag_add("farbe", "1.0")
+    K8Anzeige.tag_config("farbe", background="white")
+    
+    
+    K9Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K9Anzeige.grid(row = 8+yv, column =6+xv)
+    K9Anzeige.tag_add("farbe", "1.0")
+    K9Anzeige.tag_config("farbe", background="white")
+    
+    
+    K10Anzeige = tk.Text(Buttonframe, height=1, width=9)
+    K10Anzeige.grid(row = 9+yv, column =6+xv)
+    K10Anzeige.tag_add("farbe", "1.0")
+    K10Anzeige.tag_config("farbe", background="white")
+    
+    schliessframe = tk.Frame(width=270, height=30, bg = '#a6a4a4', relief='raised', bd = 4)
+    schliessframe.grid(row=9, column=2, sticky = "s")
+
+    ButtonStop= tk.Button(schliessframe, text="Schliessen", command=schliessen)
+    ButtonStop.grid(columnspan=10)
+   
+   
+
+    
 #----------------------------------------------
     var.mainloop()
 ##------------------------------------------------
@@ -650,13 +781,15 @@ def Variabelmanager(data):
         kanaele[9].status = False
     
 def connectionhandler():
-    
-    while True:
+    global schliessen
+    while schliessen == False:
         
         data, addr = s.recvfrom(1)
         print("Verbunden")
         variabelmanagerThread = threading.Thread(target=Variabelmanager, args=(data,), daemon=True)
         variabelmanagerThread.start()
+    
+        
         
 ##-----------------------------------------------------------------------------------------------------
 
@@ -729,6 +862,7 @@ while waiter == 0:
         comlist = str(ports[0])
         g = comlist.split(" ")
         com = g[0]
+        print("COM Port ist:", com)
         waiter = 1
     except:
         pass
@@ -741,9 +875,14 @@ def insert(port):
 
 counter = 1
 while setserial == 0:
+
+    
     counter = 1
+    if schliessen == True:
+        break
     
 if setserial == 1:
+    global ser
     try:
         ser.close()
     except:
@@ -753,10 +892,12 @@ if setserial == 1:
     try:
         ser = serial.Serial(com, 9600, timeout=.5)
         setserial = 0
+        insert(com)
+        print("Serial PC verbunden")
     except:
-        print("konnte nichr verbinden")
+        print("konnte nichr mit PC verbinden")
 
-    insert(com)
+    
     
 if setserial == 2:
     
@@ -772,27 +913,155 @@ if setserial == 2:
         setserial = 0
         f.delete(1.0, tk.INSERT)
         f.insert(tk.INSERT,"Pi")
-
+        print("Serial Pi verbunden")
+        
     except:
-        print("konnte nichr verbinden")
+        print("konnte nicht mit Pi verbinden")
 
     insert("Pi")
-while True:
+
+print("Serial verbunden")
+
+def Inserter(anzeige, modulstr, adc):
+    errortext="N/A"
+    r=modulstr.split("O")
+    anzeige.delete(1.0, tk.INSERT)
     
+    if int(r[1]) == 4:        
+        if adc[0]<adcschwelle:
+            anzeige.tag_config("farbe", background="white")
+            anzeige.insert(tk.INSERT,adc[0])            
+        else:
+            anzeige.tag_config("farbe", background="green")
+            anzeige.insert(tk.INSERT,adc[0], "farbe")
+            
+    elif int(r[1]) == 7:  
+        if adc[1]<adcschwelle:
+            anzeige.tag_config("farbe", background="white")
+            anzeige.insert(tk.INSERT,adc[1])
+        else:
+            anzeige.tag_config("farbe", background="green")
+            anzeige.insert(tk.INSERT,adc[1], "farbe")
+        
+    elif int(r[1]) == 9:
+        if adc[2]<adcschwelle:
+            anzeige.tag_config("farbe", background="white")
+            anzeige.insert(tk.INSERT,adc[2])
+        else:
+            anzeige.tag_config("farbe", background="green")
+            anzeige.insert(tk.INSERT,adc[2], "farbe")
+        
+    elif int(r[1]) == 5:
+        if adc[3]<adcschwelle:
+            anzeige.tag_config("farbe", background="white")
+            anzeige.insert(tk.INSERT,adc[3])
+        else:
+            anzeige.tag_config("farbe", background="green")
+            anzeige.insert(tk.INSERT,adc[3], "farbe")
+
+    else:
+        anzeige.insert(tk.INSERT,errortext)
     
+
+
+def Sampler():
+    global schliessen
+    while schliessen == False:
+        for i in range(len(sendbools)):
+            
+            
+            sendbools[i] = True
+            print("sendbool", i, "auf True gesetzt")
+            
+            time.sleep(0.5)
+            adc = []
+            try:                
+                data= ser.read(400)
+            except:
+                break
+            if len(data)==33:
+                modul = data[4]
+                #print ("Modul",modul)
+                
+                adc0=data[24]*256+data[25]
+                #print("adc0", adc0)
+                adc.append(adc0)
+                adc1=data[26]*256+data[27]
+                #print("adc1", adc1)
+                adc.append(adc1)
+                adc2=data[28]*256+data[29]
+                #print("adc2", adc2)
+                adc.append(adc2)
+                adc3=data[30]*256+data[31]
+                #print("adc3", adc3)
+                adc.append(adc3)
+
+            
+                zähler = 0
+                for w in kanaele:
+                    w1= w.zuordnungOn[0]
+                    w2=w1.split("_")
+                    w3=w2[0]
+                    
+                    if int(w3) == int(modul):
+                        
+                        if zähler == 0:
+                            Inserter(K1Anzeige, w2[1], adc)
+                          
+                        elif zähler == 1:
+                            Inserter(K2Anzeige, w2[1], adc)
+                                                           
+                        elif zähler == 2:
+                            Inserter(K3Anzeige, w2[1], adc)
+                            
+                        elif zähler == 3:
+                            Inserter(K4Anzeige, w2[1], adc)
+                           
+                        elif zähler == 4:
+                            Inserter(K5Anzeige, w2[1], adc)
+                                                           
+                        elif zähler == 5:
+                            Inserter(K6Anzeige, w2[1], adc)                                                     
+
+                        elif zähler == 6:
+                            Inserter(K7Anzeige, w2[1], adc)
+                            
+                        elif zähler == 7:
+                            Inserter(K8Anzeige, w2[1], adc)   
+
+                        elif zähler == 8:
+                            Inserter(K9Anzeige, w2[1], adc)
+                            
+                        elif zähler == 9:
+                            Inserter(K10Anzeige, w2[1], adc)
+                         
+
+                    zähler= zähler+1               
+            else:
+                print("Länge der erhaltenen Daten:", len(data))
+                print("Frame zu lang")
+        
+            time.sleep(0.1)
+    print("schliessen des Samplers")
     
-##    print("Sendung" , counter)
-##    print("")
-##    counter = counter + 1
+SamplerThread = threading.Thread(target=Sampler, args=(), daemon=True)
+SamplerThread.start()
+
+
+
+   
+while schliessen == False:
 
     for k in kanaele:
         
         if k.status==True:
+            print("On")
             if k.eOn != k.frameOn:
                 k.eOn = k.frameOn
                 print(k.strOn)
                 try:
                     ser.write(k.frameOn)
+                    print("gesendet:", k.frameOn)
                 except:
                     print("konnte nicht senden")
             
@@ -800,18 +1069,32 @@ while True:
 
         else:
             if k.eOn != k.frameOff:
+                print("Off")
                 k.eOn = k.frameOff
                 print(k.strOff)
                 try:
                     ser.write(k.frameOff)
+                    print("gesendet:", k.frameOff)
                 except:
                     print("konnte nicht senden")    
     
 
-
-
-mainloop()
-
-ser.close()
-
+        for i in range(len(sendbools)):
+            if sendbools[i] == True:
+                sendbools[i]=False
+                print("Sendbool == True")
+                print(sendbools)
+                try:
+                    ser.write(samplerframes[i])
+                except:
+                    pass
+try:
+    ser.close()
+except:
+    pass
+time.sleep(1)
+print("--------------------------")
+print("Alles Geschlossen")
+print("--------------------------")
+time.sleep(2)
 

@@ -13,3 +13,31 @@
 2_IO4_off= 7E 00 10 17 01 00 13 A2 00 41 87 36 DE FF FE 02 44 34 05 DA
 3_IO4_on = 7E 00 10 17 01 00 13 A2 00 41 87 34 E8 FF FE 02 44 34 04 D3
 3_IO4_off= 7E 00 10 17 01 00 13 A2 00 41 87 34 E8 FF FE 02 44 34 05 D2
+
+
+
+[default]
+kanaele[0].zuordnungOn = 1_IO3_on
+kanaele[0].zuordnungOff = 1_IO3_off
+kanaele[1].zuordnungOn  = 2_IO4_on
+kanaele[1].zuordnungOff = 2_IO4_off
+kanaele[2].zuordnungOn  = 3_IO2_on
+kanaele[2].zuordnungOff = 3_IO2_off
+kanaele[3].zuordnungOn  = 1_IO1_on
+kanaele[3].zuordnungOff = 1_IO1_off
+kanaele[4].zuordnungOn  = 2_IO1_on
+kanaele[4].zuordnungOff = 2_IO1_off
+kanaele[5].zuordnungOn  = 3_IO4_on
+kanaele[5].zuordnungOff = 3_IO4_off
+kanaele[6].zuordnungOn  = 1_IO2_on
+kanaele[6].zuordnungOff = 1_IO2_off
+kanaele[7].zuordnungOn  = 2_IO2_on
+kanaele[7].zuordnungOff = 2_IO2_off
+kanaele[8].zuordnungOn  = 3_IO2_on
+kanaele[8].zuordnungOff = 3_IO2_off
+kanaele[9].zuordnungOn  = 1_IO4_on
+kanaele[9].zuordnungOff = 1_IO4_off
+
+[Sampler]
+SampleRequestM3= 7E 00 0F 17 03 00 13 A2 00 41 87 34 E8 FF FE 02 49 53 B1
+SampleRequestM1= 7E 00 0F 17 01 00 13 A2 00 41 87 34 CF FF FE 01 49 53 CD
