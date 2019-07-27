@@ -1,0 +1,24 @@
+{
+    "Header": {
+        "Comment": "All values are metric (mm)",
+        "CreationDate": "2019-07-17T06:09:14Z",
+        "GenerationSoftware": {
+            "Application": "EAGLE",
+            "Vendor": "Autodesk",
+            "Version": "9.4.2"
+        },
+        "Part": "Single"
+    },
+    "Overall": {
+        "BoardThickness": 1.57,
+        "LayerNumber": 2,
+        "Name": {
+            "ProjectId": "Schaltplan1"
+        },
+        "Owner": "YAron von Arx <yaron.vonarx@ksm.edu-zg.ch>",
+        "Size": {
+            "X": 66.02,
+            "Y": 47.93
+        }
+    }
+}
