@@ -43,7 +43,7 @@ schliessen = False
 
 pfile =""
 programmclose = 0
-switchOffTime = 10
+switchOffTime = 5
 anzk = 10
 
 #Kanäle-------------------------------------
@@ -264,7 +264,8 @@ def GUI(name):
             prog = open(pfile, "r")
             parser.read("config")
             print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-
+            progd.insert(tk.INSERT, "\n")
+            progd.insert(tk.INSERT,"Programm start")
             for line in prog:
                 
                 if programmclose == 1:
@@ -304,11 +305,16 @@ def GUI(name):
                         
                     except:
                         print("Fehler")
+                    progd.insert(tk.INSERT, "\n")
+                    print(g2[1])
+                    progd.insert(tk.INSERT, "warte:"+ str(g2[1])+"s")
                     time.sleep(int(g2[1]))
             prog.close()
             
             print("Programm fertig")
-            
+            progd.insert(tk.INSERT, "\n")
+            progd.insert(tk.INSERT,"Programm fertig")
+            progd.insert(tk.INSERT, "\n")
             print("gggggggggggggggggggggggggggggg")
         except:
             print("Kein File ausgewählt")
@@ -516,7 +522,15 @@ def GUI(name):
         var.filename =  filedialog.askopenfilename(initialdir = "/",title = "Wähle das Programmfile aus",filetypes = (("csv","*.csv"),("all files","*.*")))
         pfile = var.filename
         print(pfile)
+        try:
+            File.delete(1.0, tk.INSERT)
+        except:
+            pass
         File.insert(tk.INSERT, str(pfile))
+        try:
+            progd.delete(1.0, tk.INSERT)
+        except:
+            pass
         progd.insert(tk.INSERT, "File Ausgewählt")
         
     
@@ -528,7 +542,7 @@ def GUI(name):
     
 
     def schliessen():
-        
+        ProgrammStop()
         var.quit()
         global schliessen
         schliessen = True
@@ -720,6 +734,11 @@ def GUI(name):
     
 #----------------------------------------------
     var.mainloop()
+
+##Definition und starten des Threads  
+fenster = threading.Thread(target=GUI, args=(1,), daemon=True)
+fenster.start()
+
 ##------------------------------------------------
 def Variabelmanager(data):
     
@@ -779,6 +798,13 @@ def Variabelmanager(data):
         kanaele[9].status = True
         time.sleep(switchOffTime)
         kanaele[9].status = False
+
+    if h ==b'B':
+        print("Programm start")
+        global programmclose
+        programmclose = 0
+        ProgrammT = threading.Thread(target=Programm, args=(), daemon=True)
+        ProgrammT.start()
     
 def connectionhandler():
     global schliessen
@@ -793,9 +819,6 @@ def connectionhandler():
         
 ##-----------------------------------------------------------------------------------------------------
 
-##Definition und starten des Threads  
-fenster = threading.Thread(target=GUI, args=(1,), daemon=True)
-fenster.start()
 
 
 
@@ -971,7 +994,7 @@ def Sampler():
             
             
             sendbools[i] = True
-            print("sendbool", i, "auf True gesetzt")
+            
             
             time.sleep(0.5)
             adc = []
@@ -1038,8 +1061,7 @@ def Sampler():
 
                     zähler= zähler+1               
             else:
-                print("Länge der erhaltenen Daten:", len(data))
-                print("Frame zu lang")
+                pass
         
             time.sleep(0.1)
     print("schliessen des Samplers")
@@ -1082,8 +1104,7 @@ while schliessen == False:
         for i in range(len(sendbools)):
             if sendbools[i] == True:
                 sendbools[i]=False
-                print("Sendbool == True")
-                print(sendbools)
+                
                 try:
                     ser.write(samplerframes[i])
                 except:
