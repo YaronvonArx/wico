@@ -246,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         if(ps>0) {
                             ps = 0;
-                            byte[] data5 = {0x41};
+                            byte[] data5 = {0x42};
                             DatagramPacket packet
                                     = new DatagramPacket(data5, 1, address, 8888);
                             socket.send(packet);
