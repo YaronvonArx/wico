@@ -1077,7 +1077,7 @@ while schliessen == False:
     for k in kanaele:
         
         if k.status==True:
-            print("On")
+            
             if k.eOn != k.frameOn:
                 k.eOn = k.frameOn
                 print(k.strOn)
@@ -1091,7 +1091,7 @@ while schliessen == False:
 
         else:
             if k.eOn != k.frameOff:
-                print("Off")
+                
                 k.eOn = k.frameOff
                 print(k.strOff)
                 try:
