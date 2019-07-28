@@ -1,7 +1,9 @@
 package com.example.fire1;
 
+import android.content.Context;
 import android.os.Build;
 import android.os.NetworkOnMainThreadException;
+import android.os.VibrationEffect;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,6 +16,7 @@ import java.net.*;
 import java.io.*;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
+import android.os.Vibrator;
 
 import static android.util.Log.d;
 
@@ -69,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
 
         });
         **/
+
+
+
         IPAdresseInput = findViewById(R.id.editText2);
         IPAdresseInput.addTextChangedListener(new TextWatcher() {
 
@@ -244,6 +250,8 @@ public class MainActivity extends AppCompatActivity {
                             DatagramPacket packet
                                     = new DatagramPacket(data5, 1, address, 8888);
                             socket.send(packet);
+                            vibrate2();
+
                         }
 
 
@@ -266,56 +274,87 @@ public class MainActivity extends AppCompatActivity {
         sendThread.start();
 
     }
+    public void vibrate() {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(200);
+        }
+    }
+    public void vibrate2() {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(400, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(400);
+        }
+    }
     /** Called when the user taps the Send button */
     public void button1click(View view) {
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 1 gesendet");
         start1 = 1;
+        vibrate();
     }
     public void button2click(View view) {
         start2 = 2;
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 2 gesendet");
+        vibrate();
     }
     public void button3click(View view) {
         start3 = 3;
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 3 gesendet");
+        vibrate();
     }
     public void button4click(View view) {
         start4 = 4;
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 4 gesendet");
+        vibrate();
+
     }
     public void button5click(View view) {
         start5 = 5;
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 5 gesendet");
+        vibrate();
     }
     public void button6click(View view) {
         start6 = 6;
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 6 gesendet");
+        vibrate();
     }
     public void button7click(View view) {
         start7 = 7;
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 7 gesendet");
+        vibrate();
     }
     public void button8click(View view) {
         start8 = 8;
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 8 gesendet");
+        vibrate();
     }
     public void button9click(View view) {
         start9 = 9;
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 9 gesendet");
+        vibrate();
+
     }
     public void button10click(View view) {
         start10 = 10;
         TextView textView = findViewById(R.id.infoText);
         textView.setText("K 10 gesendet");
+        vibrate();
+
     }
     public void closeTheConnection(View view){
         close = 1;
