@@ -1,19 +1,21 @@
 package com.example.fire1;
 
 import android.os.Build;
+import android.os.NetworkOnMainThreadException;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.Switch;
 import android.widget.TextView;
 import java.net.*;
 import java.io.*;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
-import java.net.InterfaceAddress;
+
+import static android.util.Log.d;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,16 +34,21 @@ public class MainActivity extends AppCompatActivity {
     static int start9;
     static int start10;
 
-    static int su;
+    static int ps;
+
+    static InetAddress address;
+
+    //static int su;
 
     static int close;
-    Switch oswitch;
+    //Switch oswitch;
+    public EditText IPAdresseInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+/**
         oswitch = (Switch) findViewById(R.id.oswitch);
         oswitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -61,12 +68,58 @@ public class MainActivity extends AppCompatActivity {
 
 
         });
+        **/
+        IPAdresseInput = findViewById(R.id.editText2);
+        IPAdresseInput.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                ;
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                hostname = IPAdresseInput.getText().toString();
+                try {
+
+                    InetAddress address0 = InetAddress.getByName(hostname);
+                    TextView hostnameView = findViewById(R.id.hostnameInfo);
+                    hostnameView.setText(hostname);
+                    address = address0;
+                } catch (UnknownHostException e) {
+
+                    e.printStackTrace();
+                    try {
+                        address = InetAddress.getByName("192.168.1.255");
+                        TextView hostnameView = findViewById(R.id.hostnameInfo);
+                        String error = "Invalid IP";
+                        hostnameView.setText(error);
+                    } catch (UnknownHostException e1) {
+                        e1.printStackTrace();
+                    }
+                } catch (NetworkOnMainThreadException e) {
+                    e.printStackTrace();
+                    try {
+                        address = InetAddress.getByName("192.168.1.255");
+                        TextView hostnameView = findViewById(R.id.hostnameInfo);
+                        String error = "Invalid IP";
+                        hostnameView.setText(error);
+                    } catch (UnknownHostException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                ;
+            }
+        });
         start1 = 0;
         start2 = 0;
         start3 = 0;
         start4 = 0;
         start5 = 0;
-
         start6 = 0;
         start7 = 0;
         start8 = 0;
@@ -74,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         start10 = 0;
 
         close = 0;
+        ps = 0;
 
         Runnable runnable = new Runnable() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -87,11 +141,9 @@ public class MainActivity extends AppCompatActivity {
                     //byte[] bytes = ip0.getAddress();
                     //bytes[3] = (byte)255;
                     //InetAddress address = InetAddress.getByAddress(bytes);**/
-                    InetAddress address = InetAddress.getByName(hostname);
 
+                InetAddress address = InetAddress.getByName("192.168.1.255");
                     while(close==0){
-
-
 
                         if(start1>0) {
 
@@ -186,6 +238,13 @@ public class MainActivity extends AppCompatActivity {
                             socket.send(packet);
                             System.out.println("Start5ON");
                         }
+                        if(ps>0) {
+                            ps = 0;
+                            byte[] data5 = {0x41};
+                            DatagramPacket packet
+                                    = new DatagramPacket(data5, 1, address, 8888);
+                            socket.send(packet);
+                        }
 
 
                     }
@@ -260,6 +319,12 @@ public class MainActivity extends AppCompatActivity {
     }
     public void closeTheConnection(View view){
         close = 1;
+    }
+    public void progstart(View view) {
+        ps = 1;
+        TextView textView = findViewById(R.id.infoText);
+        textView.setText("Prog. start");
+
     }
 
     /**private static Ip4Address getInterfaceIp(int interfaceIndex) {
