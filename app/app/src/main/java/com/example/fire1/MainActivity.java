@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                     //bytes[3] = (byte)255;
                     //InetAddress address = InetAddress.getByAddress(bytes);**/
 
-                InetAddress address = InetAddress.getByName("192.168.1.255");
+                address = InetAddress.getByName("192.168.1.255");
                     while(close==0){
 
                         if(start1>0) {
